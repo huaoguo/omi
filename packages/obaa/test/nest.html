@@ -19,29 +19,64 @@
     QUnit.module('obaa', function () {
 
 
-      QUnit.test("simple", function (assert) {
+      QUnit.test("没有重复对象", function (assert) {
 
-        const items = [{ a: 1 }]
-        const currentItem = {
-          items,
-          b: 1
+        const items = [{ a: 1 }, { a: 2 }]
+
+        // 当 data 里没有 currentItem 时
+        const data = {
+          items
         }
 
-
-        const data = { items, currentItem }
-
         obaa(data, (a, b, c, d) => {
-
           console.log(a, b, c, d)
+          assert.ok(d === '#-items-0')
         })
 
+        data.items[0].a = 3
 
-        // data.currentItem.b = 2
-        // items[0] = 111
-        //可以触发
-        data.currentItem.items[0] = 222
+      })
 
-        assert.deepEqual(1, 1)
+      QUnit.test("有重复对象", function (assert) {
+
+        const items = [{ a: 1 }, { a: 2 }]
+        const currentItem = items[0]
+
+        // 当 data 里没有 currentItem 时
+        const data = {
+          items,
+          currentItem
+        }
+
+        obaa(data, (a, b, c, d) => {
+          // 此时触发了 currentItem，没有触发 items
+          // 因为 view 里遍历 items 渲染，所以 view 没更新
+          console.log(a, b, c, d)
+          assert.ok(d === '#-items-0')
+        })
+
+        data.items[0].a = 3
+
+      })
+
+      QUnit.test("有重复对象，但将数组放在后面", function (assert) {
+
+        const items = [{ a: 1 }, { a: 2 }]
+        const currentItem = items[0]
+
+        // 当 data 里没有 currentItem 时
+        const data = {
+          currentItem,
+          items
+        }
+
+        obaa(data, (a, b, c, d) => {
+          // 此时可以正常触发 items 的更新
+          console.log(a, b, c, d)
+          assert.ok(d === '#-items-0')
+        })
+
+        data.items[0].a = 3
 
       })
 
